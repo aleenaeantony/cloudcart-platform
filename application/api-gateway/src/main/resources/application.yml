@@ -11,7 +11,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: "${FRONTEND_ORIGIN:http://localhost:4200}"
             allowedMethods: "*"
             allowedHeaders: "*"
 
@@ -19,7 +19,7 @@ spring:
     web-application-type: reactive
 
 jwt:
-  secret: ${JWT_SECRET:change-this-to-a-secure-random-string}
+  secret: ${JWT_SECRET}
 
 management:
   endpoints:
@@ -28,7 +28,7 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: never
 
 logging:
   level:
