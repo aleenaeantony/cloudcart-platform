@@ -15,7 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -39,7 +40,8 @@ public class ProductService {
         return productRepository.findByStatus(Product.ProductStatus.ACTIVE, pageable)
                 .map(this::mapToDTO);
     }
-
+    
+    @Cacheable(cacheNames = "productById", key = "#id")
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
@@ -96,6 +98,7 @@ public class ProductService {
         return mapToDTO(product);
     }
 
+    @CacheEvict(cacheNames = "productById", key = "#id")
     public ProductDTO updateProduct(Long id, ProductDTO.UpdateRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
@@ -115,7 +118,7 @@ public class ProductService {
         logger.info("Product updated: {}", product.getName());
         return mapToDTO(product);
     }
-
+    @CacheEvict(cacheNames = "productById", key = "#id")
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
@@ -143,6 +146,7 @@ public class ProductService {
         return mapCategoryToDTO(category);
     }
 
+    @CacheEvict(cacheNames = "productById", allEntries = true)
     public CategoryDTO updateCategory(Long id, CategoryDTO.CreateRequest request) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
@@ -151,14 +155,15 @@ public class ProductService {
         category = categoryRepository.save(category);
         return mapCategoryToDTO(category);
     }
-
+    
+    @CacheEvict(cacheNames = "productById", allEntries = true)
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         category.setStatus(Category.CategoryStatus.INACTIVE);
         categoryRepository.save(category);
     }
-
+    @CacheEvict(cacheNames = "productById", allEntries = true)
     private ProductDTO mapToDTO(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId(product.getId());

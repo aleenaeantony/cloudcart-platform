@@ -17,6 +17,20 @@ services:
       retries: 10
     networks:
       - ecommerce-network
+  
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecommerce-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -77,8 +91,12 @@ services:
       MYSQL_HOST: mysql
       MYSQL_USERNAME: ${MYSQL_USERNAME:-root}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - ecommerce-network
@@ -186,6 +204,7 @@ services:
 
 volumes:
   mysql-data:
+  redis-data:
 
 networks:
   ecommerce-network:
