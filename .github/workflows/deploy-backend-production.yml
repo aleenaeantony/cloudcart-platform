@@ -52,7 +52,7 @@ jobs:
       - name: Pre-fetch backend Maven dependencies
         working-directory: application
         run: |
-          mvn -B -ntp -DskipTests dependency:go-offline
+          mvn -B -ntp -DskipTests install
 
       - name: Scan source, dependencies, secrets and configuration
         uses: aquasecurity/trivy-action@v0.36.0
@@ -64,6 +64,7 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
+          trivy-args: --offline-scan
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
