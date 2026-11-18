@@ -13,6 +13,7 @@ concurrency:
 
 env:
   AWS_REGION: ap-south-1
+  ECR_REGISTRY: 907259822627.dkr.ecr.ap-south-1.amazonaws.com
 
 jobs:
   build-and-deploy:
