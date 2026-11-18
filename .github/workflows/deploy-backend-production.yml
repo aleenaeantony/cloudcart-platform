@@ -1,0 +1,146 @@
+name: CloudCart Backend Production Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Select backend service to deploy"
+        required: true
+        type: choice
+        options:
+          - api-gateway
+          - user-service
+          - product-service
+          - inventory-service
+          - order-service
+          - payment-service
+          - notification-service
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cloudcart-backend-${{ inputs.service }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Checkout application repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: CloudCartBackendDeployment
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set immutable image tag
+        id: image
+        shell: bash
+        run: |
+          IMAGE_TAG="prod-${GITHUB_SHA::8}-${GITHUB_RUN_ID}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+          echo "Image tag: $IMAGE_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./application
+          file: ./application/${{ inputs.service }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ vars.ECR_REGISTRY }}/${{ inputs.service }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha,scope=${{ inputs.service }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.service }}
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ vars.ECR_REGISTRY }}/${{ inputs.service }}:${{ env.IMAGE_TAG }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Checkout Kubernetes repository
+        uses: actions/checkout@v4
+        with:
+          repository: aleenaeantony/cloudcart-k8s
+          token: ${{ secrets.K8S_REPO_TOKEN }}
+          ref: main
+          path: cloudcart-k8s
+
+      - name: Update Kubernetes deployment image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SERVICE="${{ inputs.service }}"
+          MANIFEST="cloudcart-k8s/production/${SERVICE}/deployment.yaml"
+
+          if [[ ! -f "$MANIFEST" ]]; then
+            echo "Manifest not found: $MANIFEST"
+            exit 1
+          fi
+
+          python3 - "$MANIFEST" "$ECR_REGISTRY" "$SERVICE" "$IMAGE_TAG" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          manifest = Path(sys.argv[1])
+          registry, service, tag = sys.argv[2:]
+
+          content = manifest.read_text()
+          image = f"{registry}/{service}:{tag}"
+
+          pattern = r"(?m)^(\s*image:\s*).*$"
+          updated, count = re.subn(
+              pattern,
+              lambda match: match.group(1) + image,
+              content,
+              count=1
+          )
+
+          if count != 1:
+              raise SystemExit("Expected exactly one container image entry")
+
+          manifest.write_text(updated)
+          print(f"Updated {manifest} to {image}")
+          PY
+
+      - name: Commit and push Kubernetes manifest
+        working-directory: cloudcart-k8s
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add "production/${{ inputs.service }}/deployment.yaml"
+
+          if git diff --cached --quiet; then
+            echo "No manifest changes detected."
+            exit 0
+          fi
+
+          git commit -m "deploy: update ${{ inputs.service }} to ${IMAGE_TAG}"
+          git push origin main
