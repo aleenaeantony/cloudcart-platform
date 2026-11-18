@@ -37,7 +37,7 @@ jobs:
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::907259822627:role/cloudcart-production-github-actions-role
           role-session-name: CloudCartFrontendDeployment
           aws-region: ${{ env.AWS_REGION }}
 
