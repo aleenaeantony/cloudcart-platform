@@ -1,3 +1,4 @@
+
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -8,8 +9,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
+
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080
+
 CMD ["nginx", "-g", "daemon off;"]
