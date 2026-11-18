@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudcart-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/aleenaeantony/cloudcart-platform.git
+    targetRevision: main
+    path: gitops/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudcart
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
