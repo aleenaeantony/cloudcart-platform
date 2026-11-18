@@ -38,6 +38,22 @@ jobs:
       - name: Checkout application repository
         uses: actions/checkout@v4
 
+
+      - name: Set up Java 17 and Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: |
+            application/pom.xml
+            application/**/pom.xml
+
+      - name: Pre-fetch backend Maven dependencies
+        working-directory: application
+        run: |
+          mvn -B -ntp -DskipTests dependency:go-offline
+
       - name: Scan source, dependencies, secrets and configuration
         uses: aquasecurity/trivy-action@v0.36.0
         with:
