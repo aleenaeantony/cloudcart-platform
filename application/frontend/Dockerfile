@@ -1,18 +1,33 @@
 
-FROM node:20-alpine AS build
+
+# ============================================
+# Stage 1: Angular build
+# ============================================
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
+
 RUN npm ci
 
 COPY . .
+
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:alpine
+# ============================================
+# Stage 2: Non-root Nginx runtime
+# ============================================
+FROM nginxinc/nginx-unprivileged:alpine AS runtime
 
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+COPY --from=build --chown=nginx:nginx \
+    /app/dist/frontend/ \
+    /usr/share/nginx/html/
 
 EXPOSE 8080
 
+USER nginx
+
 CMD ["nginx", "-g", "daemon off;"]
+
+
