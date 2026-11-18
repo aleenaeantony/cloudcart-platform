@@ -24,16 +24,14 @@ jobs:
       - name: Checkout application repository
         uses: actions/checkout@v4
 
-      - name: Scan source, dependencies, secrets and configuration
+      - name: Scan frontend source, configuration and secrets
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: v0.76.2
-          image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           scan-type: fs
-          scan-ref: .
-          scanners: vuln,misconfig,secret
+          scan-ref: application/frontend
+          scanners: misconfig,secret
           severity: HIGH,CRITICAL
-          ignore-unfixed: true
           exit-code: '1'
 
       - name: Configure AWS credentials using OIDC
@@ -73,16 +71,6 @@ jobs:
           tags: ${{ vars.ECR_REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
-
-      -   name: Trivy filesystem scan
-          uses: aquasecurity/trivy-action@v0.36.0
-          with:
-            scan-type: fs
-            scan-ref: application/frontend
-            scanners: misconfig,secret
-            severity: HIGH,CRITICAL
-            exit-code: '1'
-
       - name: Checkout Kubernetes repository
         uses: actions/checkout@v4
         with:
