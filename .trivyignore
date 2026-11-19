@@ -1,0 +1,5 @@
+# Temporary Spring Framework exception.
+# Review and remove by 2026-12-19 after dependency remediation.
+CVE-2026-47884 exp:2026-12-19
+CVE-2026-47890 exp:2026-12-19
+CVE-2026-47892 exp:2026-12-19
