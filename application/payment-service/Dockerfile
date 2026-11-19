@@ -8,6 +8,7 @@ COPY payment-service/src payment-service/src
 RUN cd payment-service && mvn package -DskipTests -B
 
 FROM eclipse-temurin:17-jre
+RUN rm -f /usr/bin/pebble
 WORKDIR /app
 RUN groupadd --system app && useradd --system --gid app --home-dir /app app
 COPY --chown=app:app --from=build /app/payment-service/target/*.jar app.jar
