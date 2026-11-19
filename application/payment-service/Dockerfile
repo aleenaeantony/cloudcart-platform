@@ -3,7 +3,12 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends maven && rm -rf /var/lib/apt/lists/*
 COPY pom.xml .
 COPY payment-service/pom.xml payment-service/
-RUN cd payment-service && mvn dependency:go-offline -B
+RUN cd payment-service && \
+    for i in 1 2 3 4 5; do \
+      mvn dependency:go-offline -B && break; \
+      if [ "$i" -eq 5 ]; then exit 1; fi; \
+      sleep $((i * 15)); \
+    done
 COPY payment-service/src payment-service/src
 RUN cd payment-service && mvn package -DskipTests -B
 

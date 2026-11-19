@@ -3,7 +3,12 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends maven && rm -rf /var/lib/apt/lists/*
 COPY pom.xml .
 COPY user-service/pom.xml user-service/
-RUN cd user-service && mvn dependency:go-offline -B
+RUN cd user-service && \
+    for i in 1 2 3 4 5; do \
+      mvn dependency:go-offline -B && break; \
+      if [ "$i" -eq 5 ]; then exit 1; fi; \
+      sleep $((i * 15)); \
+    done
 COPY user-service/src user-service/src
 RUN cd user-service && mvn package -DskipTests -B
 
