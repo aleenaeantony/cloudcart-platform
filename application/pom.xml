@@ -31,7 +31,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-cloud.version>2025.0.3</spring-cloud.version>
-        <spring-kafka.version>3.3.11</spring-kafka.version>
+        <spring-kafka.version>3.3.16</spring-kafka.version>
         <jjwt.version>0.12.5</jjwt.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     <jackson-bom.version>2.21.7</jackson-bom.version><netty.version>4.1.137.Final</netty.version><tomcat.version>10.1.59</tomcat.version><bouncycastle.version>1.85</bouncycastle.version><snappy.version>1.1.10.9</snappy.version></properties>
