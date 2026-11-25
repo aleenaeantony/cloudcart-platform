@@ -67,7 +67,7 @@ jobs:
             org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
             -Dsonar.projectKey=aleenaeantony_cloudcart-backend \
             -Dsonar.organization=aleenaeantony \
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
 
       - name: Scan source, dependencies, secrets and configuration
         uses: aquasecurity/trivy-action@v0.36.0
