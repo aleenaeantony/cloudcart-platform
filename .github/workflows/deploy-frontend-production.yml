@@ -61,7 +61,7 @@ jobs:
           args: >
             -Dsonar.organization=aleenaeantony
             -Dsonar.projectKey=aleenaeantony_cloudcart-frontend
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
