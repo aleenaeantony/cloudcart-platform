@@ -37,9 +37,9 @@ jobs:
     steps:
       - name: Checkout application repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-
-      
       - name: Set up Java 17 and Maven cache
         uses: actions/setup-java@v4
         with:
@@ -50,10 +50,24 @@ jobs:
             application/pom.xml
             application/**/pom.xml
 
-      - name: Pre-fetch backend Maven dependencies
+      - name: Build and test all backend modules
         working-directory: application
         run: |
-          mvn -B -ntp -DskipTests install
+          mvn -B -ntp clean install
+
+      - name: Authenticate with SonarQube Cloud
+        uses: SonarSource/sonarqube-auth-action@v1
+        with:
+          project-key: aleenaeantony_cloudcart-backend
+
+      - name: Analyze backend with SonarQube Cloud
+        working-directory: application
+        run: |
+          mvn -B -ntp \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.projectKey=aleenaeantony_cloudcart-backend \
+            -Dsonar.organization=aleenaeantony \
+            -Dsonar.qualitygate.wait=true
 
       - name: Scan source, dependencies, secrets and configuration
         uses: aquasecurity/trivy-action@v0.36.0
