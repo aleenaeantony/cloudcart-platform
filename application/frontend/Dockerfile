@@ -21,7 +21,7 @@ RUN npm run build
 FROM nginxinc/nginx-unprivileged:alpine AS runtime
 
 COPY --from=build --chown=nginx:nginx \
-    /app/dist/frontend/ \
+    /app/dist/frontend/browser/ \
     /usr/share/nginx/html/
 
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
