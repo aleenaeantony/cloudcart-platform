@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
@@ -6,31 +6,37 @@ import { AuthService } from '../../../services/auth.service';
 import { Order } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-my-orders',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-my-orders',
+    imports: [CommonModule, RouterModule],
+    template: `
     <div class="orders-page">
       <h1>My Orders</h1>
       <div class="filters">
-        <button *ngFor="let f of filters" [class.active]="activeFilter === f.value"
-                (click)="filterOrders(f.value)">{{f.label}}</button>
+        @for (f of filters; track f) {
+          <button [class.active]="activeFilter === f.value"
+          (click)="filterOrders(f.value)">{{f.label}}</button>
+        }
       </div>
-      <div *ngIf="orders.length === 0" class="empty"><p>No orders found</p></div>
-      <div *ngFor="let order of orders" class="order-card" [routerLink]="['/order', order.id]">
-        <div class="order-header">
-          <span class="order-num">{{order.orderNumber}}</span>
-          <span class="date">{{order.createdAt | date:'mediumDate'}}</span>
+      @if (orders.length === 0) {
+        <div class="empty"><p>No orders found</p></div>
+      }
+      @for (order of orders; track order) {
+        <div class="order-card" [routerLink]="['/order', order.id]">
+          <div class="order-header">
+            <span class="order-num">{{order.orderNumber}}</span>
+            <span class="date">{{order.createdAt | date:'mediumDate'}}</span>
+          </div>
+          <div class="order-body">
+            <span class="amount">\${{order.finalAmount.toFixed(2)}}</span>
+            <span class="status-badge" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span>
+            <span class="payment-badge" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span>
+          </div>
         </div>
-        <div class="order-body">
-          <span class="amount">\${{order.finalAmount.toFixed(2)}}</span>
-          <span class="status-badge" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span>
-          <span class="payment-badge" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span>
-        </div>
-      </div>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .orders-page { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
     h1 { color: #1a1a2e; margin-bottom: 20px; }
     .filters { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }

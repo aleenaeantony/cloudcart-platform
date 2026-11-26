@@ -173,10 +173,23 @@ export class HomeComponent implements OnInit {
   }
 
   getCategoryIcon(name: string): string {
+    const key = (name || '').trim().toLowerCase();
     const icons: Record<string, string> = {
-      'Electronics': '📱', 'Clothing': '👕', 'Home & Kitchen': '🏠',
-      'Books': '📚', 'Sports': '⚽', 'Beauty': '💄', 'Toys': '🎮', 'Automotive': '🚗'
+      'electronics': '📱',
+      'clothing': '👕',
+      'fashion': '👕',
+      'home & kitchen': '🏠',
+      'home': '🏠',
+      'appliances': '🔌',
+      'books': '📚',
+      'book': '📚',
+      'sports': '⚽',
+      'beauty': '💄',
+      'toys': '🧸',
+      'automotive': '🚗',
+      'shopping': '🛍️',
+      'groceries': '🛒'
     };
-    return icons[name] || '📦';
+    return icons[key] || '🛍️';
   }
 }

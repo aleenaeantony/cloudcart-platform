@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  selector: 'app-admin-layout',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-admin-layout',
+    imports: [RouterModule],
+    template: `
     <div class="admin-layout">
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -31,7 +30,8 @@ import { AuthService } from '../../../services/auth.service';
       </main>
     </div>
   `,
-  styles: [`
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-layout { display: flex; min-height: 100vh; }
     .sidebar { width: 250px; background: #1a1a2e; color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
     .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }

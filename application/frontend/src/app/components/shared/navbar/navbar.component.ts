@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
@@ -7,10 +7,9 @@ import { CartService } from '../../../services/cart.service';
 import { NotificationService } from '../../../services/notification.service';
 
 @Component({
-  selector: 'app-navbar',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
-  template: `
+    selector: 'app-navbar',
+    imports: [RouterModule, FormsModule],
+    template: `
     <nav class="navbar">
       <div class="nav-container">
         <a routerLink="/" class="logo">
@@ -20,46 +19,52 @@ import { NotificationService } from '../../../services/notification.service';
 
         <div class="search-bar">
           <input type="text" [(ngModel)]="searchQuery" placeholder="Search products..."
-                 (keyup.enter)="search()" />
+            (keyup.enter)="search()" />
           <button class="search-btn" (click)="search()">🔍</button>
         </div>
 
         <div class="nav-links">
           <a routerLink="/products" class="nav-link">Products</a>
+          <a routerLink="/profile" class="nav-link">My Profile</a>
 
-          <ng-container *ngIf="authService.isLoggedIn()">
+          @if (authService.isLoggedIn()) {
             <div class="nav-dropdown">
               <button class="nav-link user-menu">
                 {{ authService.getCurrentUser()?.firstName }}
                 <span class="dropdown-arrow">▾</span>
               </button>
               <div class="dropdown-content">
-                <a routerLink="/profile">My Profile</a>
                 <a routerLink="/my-orders">My Orders</a>
                 <a routerLink="/notifications" class="notification-link">
                   Notifications
-                  <span *ngIf="unreadCount > 0" class="badge">{{unreadCount}}</span>
+                  @if (unreadCount > 0) {
+                    <span class="badge">{{unreadCount}}</span>
+                  }
                 </a>
-                <a *ngIf="authService.isAdmin()" routerLink="/admin">Admin Dashboard</a>
+                @if (authService.isAdmin()) {
+                  <a routerLink="/admin">Admin Dashboard</a>
+                }
                 <button (click)="logout()" class="logout-btn">Logout</button>
               </div>
             </div>
-
             <a routerLink="/cart" class="cart-icon">
               🛒
-              <span *ngIf="cartCount > 0" class="badge">{{cartCount}}</span>
+              @if (cartCount > 0) {
+                <span class="badge">{{cartCount}}</span>
+              }
             </a>
-          </ng-container>
+          }
 
-          <ng-container *ngIf="!authService.isLoggedIn()">
+          @if (!authService.isLoggedIn()) {
             <a routerLink="/login" class="nav-link">Login</a>
             <a routerLink="/register" class="nav-btn">Register</a>
-          </ng-container>
+          }
         </div>
       </div>
     </nav>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .navbar { background: #1a1a2e; color: white; padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
     .nav-container { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; padding: 12px 24px; gap: 24px; }
     .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: white; font-size: 1.5rem; font-weight: 700; }

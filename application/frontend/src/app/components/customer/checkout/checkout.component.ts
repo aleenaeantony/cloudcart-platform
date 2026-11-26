@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
@@ -8,10 +8,9 @@ import { PaymentService } from '../../../services/payment.service';
 import { Cart, Order } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-checkout',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-checkout',
+    imports: [FormsModule, RouterModule],
+    template: `
     <div class="checkout-page">
       <h1>Checkout</h1>
       <div class="steps">
@@ -22,135 +21,153 @@ import { Cart, Order } from '../../../models/order.model';
       </div>
 
       <!-- Step 1: Address -->
-      <div *ngIf="step === 1" class="checkout-section">
-        <h2>Shipping Address</h2>
-        <form (ngSubmit)="nextStep()">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" [(ngModel)]="address.name" name="name" required placeholder="Full name" />
-          </div>
-          <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" [(ngModel)]="address.phone" name="phone" required placeholder="Phone number" />
-          </div>
-          <div class="form-group">
-            <label>Address</label>
-            <textarea [(ngModel)]="address.line1" name="line1" required placeholder="Street address"></textarea>
-          </div>
-          <div class="form-row">
+      @if (step === 1) {
+        <div class="checkout-section">
+          <h2>Shipping Address</h2>
+          <form (ngSubmit)="nextStep()">
             <div class="form-group">
-              <label>City</label>
-              <input type="text" [(ngModel)]="address.city" name="city" required />
+              <label>Full Name</label>
+              <input type="text" [(ngModel)]="address.name" name="name" required placeholder="Full name" />
             </div>
             <div class="form-group">
-              <label>State</label>
-              <input type="text" [(ngModel)]="address.state" name="state" required />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Pincode</label>
-              <input type="text" [(ngModel)]="address.pincode" name="pincode" required />
+              <label>Phone</label>
+              <input type="tel" [(ngModel)]="address.phone" name="phone" required placeholder="Phone number" />
             </div>
             <div class="form-group">
-              <label>Country</label>
-              <input type="text" [(ngModel)]="address.country" name="country" value="United States" />
-            </div>
-          </div>
-          <button type="submit" class="next-btn">Continue to Review →</button>
-        </form>
-      </div>
-
-      <!-- Step 2: Review -->
-      <div *ngIf="step === 2" class="checkout-section">
-        <h2>Review Order</h2>
-        <div class="review-items">
-          <div *ngFor="let item of cart?.items" class="review-item">
-            <span>{{item.productName}} × {{item.quantity}}</span>
-            <span>\${{item.subtotal.toFixed(2)}}</span>
-          </div>
-        </div>
-        <div class="review-address">
-          <h3>Shipping to:</h3>
-          <p>{{address.name}}, {{address.line1}}, {{address.city}}, {{address.state}} {{address.pincode}}</p>
-        </div>
-        <div class="review-total">
-          <div class="summary-row"><span>Subtotal</span><span>\${{(cart?.subtotal ?? 0).toFixed(2)}}</span></div>
-          <div class="summary-row"><span>Shipping</span><span>{{(cart?.subtotal || 0) >= 100 ? 'Free' : '$9.99'}}</span></div>
-          <div class="summary-row"><span>Tax (18%)</span><span>\${{((cart?.subtotal || 0) * 0.18).toFixed(2)}}</span></div>
-          <hr />
-          <div class="summary-row total"><span>Total</span><span>\${{getTotal().toFixed(2)}}</span></div>
-        </div>
-        <div class="btn-group">
-          <button class="back-btn" (click)="step = 1">← Back</button>
-          <button class="next-btn" (click)="placeOrder()">Place Order →</button>
-        </div>
-      </div>
-
-      <!-- Step 3: Payment -->
-      <div *ngIf="step === 3" class="checkout-section">
-        <h2>Payment Method</h2>
-        <div *ngIf="processing" class="processing">
-          <div class="spinner"></div>
-          <p>Processing payment...</p>
-        </div>
-        <div *ngIf="!processing && !order" class="payment-methods">
-          <div *ngFor="let method of paymentMethods" class="payment-option"
-               [class.selected]="selectedPayment === method.value"
-               (click)="selectedPayment = method.value">
-            <span class="method-icon">{{method.icon}}</span>
-            <span class="method-name">{{method.name}}</span>
-          </div>
-
-          <div *ngIf="selectedPayment === 'CARD'" class="card-form">
-            <div class="form-group">
-              <label>Card Number</label>
-              <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" />
+              <label>Address</label>
+              <textarea [(ngModel)]="address.line1" name="line1" required placeholder="Street address"></textarea>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Expiry</label>
-                <input type="text" placeholder="MM/YY" maxlength="5" />
+                <label>City</label>
+                <input type="text" [(ngModel)]="address.city" name="city" required />
               </div>
               <div class="form-group">
-                <label>CVV</label>
-                <input type="text" placeholder="123" maxlength="3" />
+                <label>State</label>
+                <input type="text" [(ngModel)]="address.state" name="state" required />
               </div>
             </div>
-            <div class="form-group">
-              <label>Name on Card</label>
-              <input type="text" placeholder="John Doe" />
+            <div class="form-row">
+              <div class="form-group">
+                <label>Pincode</label>
+                <input type="text" [(ngModel)]="address.pincode" name="pincode" required />
+              </div>
+              <div class="form-group">
+                <label>Country</label>
+                <input type="text" [(ngModel)]="address.country" name="country" value="United States" />
+              </div>
             </div>
+            <button type="submit" class="next-btn">Continue to Review →</button>
+          </form>
+        </div>
+      }
+
+      <!-- Step 2: Review -->
+      @if (step === 2) {
+        <div class="checkout-section">
+          <h2>Review Order</h2>
+          <div class="review-items">
+            @for (item of cart?.items; track item) {
+              <div class="review-item">
+                <span>{{item.productName}} × {{item.quantity}}</span>
+                <span>\${{item.subtotal.toFixed(2)}}</span>
+              </div>
+            }
           </div>
-
-          <div *ngIf="paymentError" class="error-alert">{{paymentError}}</div>
-
+          <div class="review-address">
+            <h3>Shipping to:</h3>
+            <p>{{address.name}}, {{address.line1}}, {{address.city}}, {{address.state}} {{address.pincode}}</p>
+          </div>
+          <div class="review-total">
+            <div class="summary-row"><span>Subtotal</span><span>\${{(cart?.subtotal ?? 0).toFixed(2)}}</span></div>
+            <div class="summary-row"><span>Shipping</span><span>{{(cart?.subtotal || 0) >= 100 ? 'Free' : '$9.99'}}</span></div>
+            <div class="summary-row"><span>Tax (18%)</span><span>\${{((cart?.subtotal || 0) * 0.18).toFixed(2)}}</span></div>
+            <hr />
+            <div class="summary-row total"><span>Total</span><span>\${{getTotal().toFixed(2)}}</span></div>
+          </div>
           <div class="btn-group">
-            <button class="back-btn" (click)="step = 2">← Back</button>
-            <button class="pay-btn" (click)="processPayment()" [disabled]="!selectedPayment">
-              Pay \${{getTotal().toFixed(2)}}
-            </button>
+            <button class="back-btn" (click)="step = 1">← Back</button>
+            <button class="next-btn" (click)="placeOrder()">Place Order →</button>
           </div>
         </div>
-      </div>
+      }
+
+      <!-- Step 3: Payment -->
+      @if (step === 3) {
+        <div class="checkout-section">
+          <h2>Payment Method</h2>
+          @if (processing) {
+            <div class="processing">
+              <div class="spinner"></div>
+              <p>Processing payment...</p>
+            </div>
+          }
+          @if (!processing && !order) {
+            <div class="payment-methods">
+              @for (method of paymentMethods; track method) {
+                <div class="payment-option"
+                  [class.selected]="selectedPayment === method.value"
+                  (click)="selectedPayment = method.value">
+                  <span class="method-icon">{{method.icon}}</span>
+                  <span class="method-name">{{method.name}}</span>
+                </div>
+              }
+              @if (selectedPayment === 'CARD') {
+                <div class="card-form">
+                  <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" />
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Expiry</label>
+                      <input type="text" placeholder="MM/YY" maxlength="5" />
+                    </div>
+                    <div class="form-group">
+                      <label>CVV</label>
+                      <input type="text" placeholder="123" maxlength="3" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Name on Card</label>
+                    <input type="text" placeholder="John Doe" />
+                  </div>
+                </div>
+              }
+              @if (paymentError) {
+                <div class="error-alert">{{paymentError}}</div>
+              }
+              <div class="btn-group">
+                <button class="back-btn" (click)="step = 2">← Back</button>
+                <button class="pay-btn" (click)="processPayment()" [disabled]="!selectedPayment">
+                  Pay \${{getTotal().toFixed(2)}}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Step 4: Confirmation -->
-      <div *ngIf="step === 4 && order" class="checkout-section confirmation">
-        <div class="success-icon">✓</div>
-        <h2>Order Placed Successfully!</h2>
-        <div class="order-details">
-          <p><strong>Order Number:</strong> {{order.orderNumber}}</p>
-          <p><strong>Amount:</strong> \${{order.finalAmount.toFixed(2)}}</p>
-          <p><strong>Status:</strong> {{order.orderStatus}}</p>
+      @if (step === 4 && order) {
+        <div class="checkout-section confirmation">
+          <div class="success-icon">✓</div>
+          <h2>Order Placed Successfully!</h2>
+          <div class="order-details">
+            <p><strong>Order Number:</strong> {{order.orderNumber}}</p>
+            <p><strong>Amount:</strong> \${{order.finalAmount.toFixed(2)}}</p>
+            <p><strong>Status:</strong> {{order.orderStatus}}</p>
+          </div>
+          <div class="btn-group">
+            <a [routerLink]="['/order', order.id]" class="next-btn">View Order</a>
+            <a routerLink="/products" class="back-btn">Continue Shopping</a>
+          </div>
         </div>
-        <div class="btn-group">
-          <a [routerLink]="['/order', order.id]" class="next-btn">View Order</a>
-          <a routerLink="/products" class="back-btn">Continue Shopping</a>
-        </div>
-      </div>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .checkout-page { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
     h1 { color: #1a1a2e; margin-bottom: 24px; }
     .steps { display: flex; gap: 8px; margin-bottom: 32px; }

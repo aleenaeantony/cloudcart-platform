@@ -1,31 +1,35 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../services/notification.service';
 import { Notification } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-notifications',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-notifications',
+    imports: [CommonModule],
+    template: `
     <div class="notifications-page">
       <div class="header">
         <h1>Notifications</h1>
         <button (click)="markAllRead()" class="mark-all">Mark all as read</button>
       </div>
-      <div *ngIf="notifications.length === 0" class="empty"><p>No notifications yet</p></div>
-      <div *ngFor="let n of notifications" class="notification-card" [class.unread]="!n.readStatus"
-           (click)="markRead(n)">
-        <div class="icon">{{getIcon(n.type)}}</div>
-        <div class="content">
-          <h3>{{n.title}}</h3>
-          <p>{{n.message}}</p>
-          <span class="time">{{n.createdAt | date:'medium'}}</span>
+      @if (notifications.length === 0) {
+        <div class="empty"><p>No notifications yet</p></div>
+      }
+      @for (n of notifications; track n) {
+        <div class="notification-card" [class.unread]="!n.readStatus"
+          (click)="markRead(n)">
+          <div class="icon">{{getIcon(n.type)}}</div>
+          <div class="content">
+            <h3>{{n.title}}</h3>
+            <p>{{n.message}}</p>
+            <span class="time">{{n.createdAt | date:'medium'}}</span>
+          </div>
         </div>
-      </div>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .notifications-page { max-width: 700px; margin: 0 auto; padding: 32px 24px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     h1 { color: #1a1a2e; }

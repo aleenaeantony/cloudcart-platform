@@ -1,12 +1,11 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-footer',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-footer',
+    imports: [RouterModule],
+    template: `
     <footer class="footer">
       <div class="footer-container">
         <div class="footer-section">
@@ -38,7 +37,8 @@ import { RouterModule } from '@angular/router';
       </div>
     </footer>
   `,
-  styles: [`
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .footer { background: #1a1a2e; color: rgba(255,255,255,0.8); padding: 48px 24px 24px; }
     .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; }
     .footer-section h3, .footer-section h4 { color: white; margin-bottom: 16px; }

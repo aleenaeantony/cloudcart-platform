@@ -1,19 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { Category } from '../../../models/product.model';
 
 @Component({
-  selector: 'app-admin-categories',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-admin-categories',
+    imports: [FormsModule],
+    template: `
     <div class="admin-page">
       <div class="page-header"><h1>Category Management</h1>
-        <button class="add-btn" (click)="showForm = !showForm">+ Add Category</button>
-      </div>
-      <div *ngIf="showForm" class="form-card">
+      <button class="add-btn" (click)="showForm = !showForm">+ Add Category</button>
+    </div>
+    @if (showForm) {
+      <div class="form-card">
         <form (ngSubmit)="saveCategory()">
           <div class="form-group"><label>Name</label><input [(ngModel)]="form.name" name="name" required /></div>
           <div class="form-group"><label>Description</label><input [(ngModel)]="form.description" name="description" /></div>
@@ -23,21 +23,25 @@ import { Category } from '../../../models/product.model';
           </div>
         </form>
       </div>
-      <table class="data-table">
-        <thead><tr><th>Name</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let c of categories">
+    }
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        @for (c of categories; track c) {
+          <tr>
             <td><strong>{{c.name}}</strong></td><td>{{c.description || '-'}}</td>
             <td><span class="badge" [class]="c.status.toLowerCase()">{{c.status}}</span></td>
             <td>
               <button class="action-btn delete" (click)="deleteCategory(c.id)">Delete</button>
             </td>
           </tr>
-        </tbody>
-      </table>
+        }
+      </tbody>
+    </table>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { padding: 0; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     h1 { color: #1a1a2e; }
