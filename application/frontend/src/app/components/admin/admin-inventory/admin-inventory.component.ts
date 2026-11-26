@@ -1,29 +1,31 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-admin-inventory',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-admin-inventory',
+    imports: [],
+    template: `
     <div class="admin-page">
       <h1>Inventory Management</h1>
       <table class="data-table">
         <thead><tr><th>Product ID</th><th>SKU</th><th>Available</th><th>Reserved</th><th>Reorder Level</th><th>Status</th><th>Location</th></tr></thead>
         <tbody>
-          <tr *ngFor="let inv of inventory" [class.low-stock]="inv.stockStatus === 'LOW_STOCK'">
-            <td>{{inv.productId}}</td><td>{{inv.sku}}</td>
-            <td>{{inv.availableQuantity}}</td><td>{{inv.reservedQuantity}}</td>
-            <td>{{inv.reorderLevel}}</td>
-            <td><span class="badge" [class]="inv.stockStatus?.toLowerCase()">{{inv.stockStatus}}</span></td>
-            <td>{{inv.warehouseLocation || '-'}}</td>
-          </tr>
+          @for (inv of inventory; track inv) {
+            <tr [class.low-stock]="inv.stockStatus === 'LOW_STOCK'">
+              <td>{{inv.productId}}</td><td>{{inv.sku}}</td>
+              <td>{{inv.availableQuantity}}</td><td>{{inv.reservedQuantity}}</td>
+              <td>{{inv.reorderLevel}}</td>
+              <td><span class="badge" [class]="inv.stockStatus?.toLowerCase()">{{inv.stockStatus}}</span></td>
+              <td>{{inv.warehouseLocation || '-'}}</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { padding: 0; }
     h1 { color: #1a1a2e; margin-bottom: 20px; }
     .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
@@ -40,7 +42,7 @@ export class AdminInventoryComponent implements OnInit {
   inventory: any[] = [];
   constructor(private http: HttpClient) {}
   ngOnInit(): void {
-    this.http.get<any>('http://localhost:8080/api/inventory').subscribe(res => {
+    this.http.get<any>('//api/inventory').subscribe(res => {
       if (res.success && res.data) this.inventory = res.data;
     });
   }

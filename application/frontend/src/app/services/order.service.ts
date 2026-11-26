@@ -7,7 +7,7 @@ import { Order, OrderItem, ApiResponse, PageResponse } from '../models/order.mod
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:8080/api/orders';
+  private apiUrl = '//api/orders';
 
   constructor(private http: HttpClient) {}
 
