@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { Product, Category } from '../../../models/product.model';
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-home',
+    imports: [RouterModule],
+    template: `
     <div class="home">
       <!-- Hero Section -->
       <section class="hero">
@@ -18,52 +17,62 @@ import { Product, Category } from '../../../models/product.model';
           <a routerLink="/products" class="hero-btn">Shop Now →</a>
         </div>
       </section>
-
+    
       <!-- Categories -->
-      <section class="section" *ngIf="categories.length">
-        <h2 class="section-title">Shop by Category</h2>
-        <div class="categories-grid">
-          <a *ngFor="let cat of categories" [routerLink]="['/products']"
-             [queryParams]="{category: cat.id}" class="category-card">
-            <span class="cat-icon">{{getCategoryIcon(cat.name)}}</span>
-            <span class="cat-name">{{cat.name}}</span>
-          </a>
-        </div>
-      </section>
-
+      @if (categories.length) {
+        <section class="section">
+          <h2 class="section-title">Shop by Category</h2>
+          <div class="categories-grid">
+            @for (cat of categories; track cat) {
+              <a [routerLink]="['/products']"
+                [queryParams]="{category: cat.id}" class="category-card">
+                <span class="cat-icon">{{getCategoryIcon(cat.name)}}</span>
+                <span class="cat-name">{{cat.name}}</span>
+              </a>
+            }
+          </div>
+        </section>
+      }
+    
       <!-- Featured Products -->
       <section class="section">
         <h2 class="section-title">Featured Products</h2>
         <div class="products-grid">
-          <div *ngFor="let product of products" class="product-card" [routerLink]="['/products', product.id]">
-            <div class="product-image">
-              <img [src]="product.imageUrl || 'https://placehold.co/400x300/3b82f6/ffffff?text=Product'"
-                   [alt]="product.name" />
-              <span *ngIf="product.discountPercentage > 0" class="discount-badge">
-                -{{product.discountPercentage}}%
-              </span>
-            </div>
-            <div class="product-info">
-              <p class="product-brand">{{product.brand}}</p>
-              <h3 class="product-name">{{product.name}}</h3>
-              <div class="product-rating">
-                <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
-                <span class="rating-text">{{product.rating}}</span>
+          @for (product of products; track product) {
+            <div class="product-card" [routerLink]="['/products', product.id]">
+              <div class="product-image">
+                <img [src]="product.imageUrl || 'https://placehold.co/400x300/3b82f6/ffffff?text=Product'"
+                  [alt]="product.name" />
+                @if (product.discountPercentage > 0) {
+                  <span class="discount-badge">
+                    -{{product.discountPercentage}}%
+                  </span>
+                }
               </div>
-              <div class="product-price">
-                <span class="final-price">\${{product.finalPrice.toFixed(2)}}</span>
-                <span *ngIf="product.discountPercentage > 0" class="original-price">
-                  \${{product.price.toFixed(2)}}
-                </span>
+              <div class="product-info">
+                <p class="product-brand">{{product.brand}}</p>
+                <h3 class="product-name">{{product.name}}</h3>
+                <div class="product-rating">
+                  <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
+                  <span class="rating-text">{{product.rating}}</span>
+                </div>
+                <div class="product-price">
+                  <span class="final-price">\${{formatPrice(product.finalPrice ?? product.price)}}</span>
+                  @if (product.discountPercentage > 0) {
+                    <span class="original-price">
+                      \${{formatPrice(product.price)}}
+                    </span>
+                  }
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
         <div class="view-all">
           <a routerLink="/products" class="view-all-btn">View All Products →</a>
         </div>
       </section>
-
+    
       <!-- Why Shop With Us -->
       <section class="features">
         <div class="feature">
@@ -88,8 +97,9 @@ import { Product, Category } from '../../../models/product.model';
         </div>
       </section>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 80px 24px; text-align: center; }
     .hero-content h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; }
     .hero-content p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 32px; }
@@ -135,17 +145,31 @@ export class HomeComponent implements OnInit {
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
-    this.productService.getProducts(0, 8).subscribe(response => {
-      if (response.success && response.data) {
-        this.products = response.data.content;
+    this.productService.getProducts(0, 8).subscribe({
+      next: response => {
+        this.products = response.success && response.data
+          ? (response.data.content || [])
+          : [];
+      },
+      error: error => {
+        console.error('Failed to load homepage products', error);
+        this.products = [];
       }
     });
 
-    this.productService.getCategories().subscribe(response => {
-      if (response.success && response.data) {
-        this.categories = response.data;
+    this.productService.getCategories().subscribe({
+      next: response => {
+        this.categories = response.success && response.data ? response.data : [];
+      },
+      error: error => {
+        console.error('Failed to load categories', error);
+        this.categories = [];
       }
     });
+  }
+
+  formatPrice(value: number | null | undefined): string {
+    return Number(value ?? 0).toFixed(2);
   }
 
   getCategoryIcon(name: string): string {

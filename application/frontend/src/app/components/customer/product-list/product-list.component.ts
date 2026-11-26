@@ -1,16 +1,16 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../services/cart.service';
+import { AuthService } from '../../../services/auth.service';
 import { Product, Category, PageResponse } from '../../../models/product.model';
 
 @Component({
-  selector: 'app-product-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-product-list',
+    imports: [FormsModule, RouterModule],
+    template: `
     <div class="catalog-page">
       <div class="catalog-container">
         <!-- Filters Sidebar -->
@@ -20,7 +20,9 @@ import { Product, Category, PageResponse } from '../../../models/product.model';
             <label>Category</label>
             <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
               <option value="">All Categories</option>
-              <option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</option>
+              @for (cat of categories; track cat) {
+                <option [value]="cat.id">{{cat.name}}</option>
+              }
             </select>
           </div>
           <div class="filter-group">
@@ -33,7 +35,7 @@ import { Product, Category, PageResponse } from '../../../models/product.model';
           </div>
           <button class="clear-btn" (click)="clearFilters()">Clear Filters</button>
         </aside>
-
+    
         <!-- Products -->
         <main class="products-main">
           <div class="products-header">
@@ -50,46 +52,59 @@ import { Product, Category, PageResponse } from '../../../models/product.model';
               </button>
             </div>
           </div>
-
-          <div *ngIf="loading" class="loading">Loading products...</div>
-
-          <div *ngIf="!loading && products.length === 0" class="empty-state">
-            <p>🔍 No products found</p>
-          </div>
-
-          <div class="products-grid">
-            <div *ngFor="let product of products" class="product-card" [routerLink]="['/products', product.id]">
-              <div class="product-image">
-                <img [src]="product.imageUrl || 'https://placehold.co/400x300/3b82f6/ffffff?text=Product'" [alt]="product.name" />
-                <span *ngIf="product.discountPercentage > 0" class="discount-badge">-{{product.discountPercentage}}%</span>
-              </div>
-              <div class="product-info">
-                <p class="brand">{{product.brand}}</p>
-                <h3 class="name">{{product.name}}</h3>
-                <div class="rating">
-                  <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
-                  <span>{{product.rating}}</span>
-                </div>
-                <div class="price">
-                  <span class="final">\${{product.finalPrice.toFixed(2)}}</span>
-                  <span *ngIf="product.discountPercentage > 0" class="original">\${{product.price.toFixed(2)}}</span>
-                </div>
-                <button class="add-cart-btn" (click)="addToCart(product, $event)">Add to Cart</button>
-              </div>
+    
+          @if (loading) {
+            <div class="loading">Loading products...</div>
+          }
+    
+          @if (!loading && products.length === 0) {
+            <div class="empty-state">
+              <p>🔍 No products found</p>
             </div>
+          }
+    
+          <div class="products-grid">
+            @for (product of products; track product) {
+              <div class="product-card" [routerLink]="['/products', product.id]">
+                <div class="product-image">
+                  <img [src]="product.imageUrl || 'https://placehold.co/400x300/3b82f6/ffffff?text=Product'" [alt]="product.name" />
+                  @if (product.discountPercentage > 0) {
+                    <span class="discount-badge">-{{product.discountPercentage}}%</span>
+                  }
+                </div>
+                <div class="product-info">
+                  <p class="brand">{{product.brand}}</p>
+                  <h3 class="name">{{product.name}}</h3>
+                  <div class="rating">
+                    <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
+                    <span>{{product.rating}}</span>
+                  </div>
+                  <div class="price">
+                    <span class="final">\${{formatPrice(product.finalPrice ?? product.price)}}</span>
+                    @if (product.discountPercentage > 0) {
+                      <span class="original">\${{formatPrice(product.price)}}</span>
+                    }
+                  </div>
+                  <button class="add-cart-btn" (click)="addToCart(product, $event)">Add to Cart</button>
+                </div>
+              </div>
+            }
           </div>
-
+    
           <!-- Pagination -->
-          <div class="pagination" *ngIf="totalPages > 1">
-            <button [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">← Prev</button>
-            <span>Page {{currentPage + 1}} of {{totalPages}}</span>
-            <button [disabled]="currentPage >= totalPages - 1" (click)="goToPage(currentPage + 1)">Next →</button>
-          </div>
+          @if (totalPages > 1) {
+            <div class="pagination">
+              <button [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">← Prev</button>
+              <span>Page {{currentPage + 1}} of {{totalPages}}</span>
+              <button [disabled]="currentPage >= totalPages - 1" (click)="goToPage(currentPage + 1)">Next →</button>
+            </div>
+          }
         </main>
       </div>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .catalog-page { max-width: 1400px; margin: 0 auto; padding: 24px; }
     .catalog-container { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
     .filters { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; position: sticky; top: 80px; }
@@ -142,6 +157,7 @@ export class ProductListComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private cartService: CartService,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -160,31 +176,43 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    if (this.searchQuery) {
-      this.productService.searchProducts(this.searchQuery, this.currentPage, 12).subscribe(res => {
-        this.handleResponse(res.data);
-      });
-    } else if (this.selectedCategory) {
-      this.productService.getProductsByCategory(+this.selectedCategory, this.currentPage, 12).subscribe(res => {
-        this.handleResponse(res.data);
-      });
-    } else {
-      this.productService.getFilteredProducts(
-        this.selectedCategory ? +this.selectedCategory : undefined,
-        undefined, this.minPrice, this.maxPrice,
-        this.currentPage, 12, this.sortBy, this.sortDir
-      ).subscribe(res => {
-        this.handleResponse(res.data);
-      });
-    }
+
+    const request = this.searchQuery
+      ? this.productService.searchProducts(this.searchQuery, this.currentPage, 12)
+      : this.selectedCategory
+        ? this.productService.getProductsByCategory(+this.selectedCategory, this.currentPage, 12)
+        : this.productService.getFilteredProducts(
+            undefined, undefined, this.minPrice, this.maxPrice,
+            this.currentPage, 12, this.sortBy, this.sortDir
+          );
+
+    request.subscribe({
+      next: response => {
+        if (response.success && response.data) {
+          this.handleResponse(response.data);
+        } else {
+          this.products = [];
+          this.totalPages = 0;
+          this.loading = false;
+        }
+      },
+      error: error => {
+        console.error('Failed to load products', error);
+        this.products = [];
+        this.totalPages = 0;
+        this.loading = false;
+      }
+    });
   }
 
   handleResponse(pageData: any): void {
+    this.products = Array.isArray(pageData?.content) ? pageData.content : [];
+    this.totalPages = Number(pageData?.totalPages) || 0;
     this.loading = false;
-    if (pageData) {
-      this.products = pageData.content;
-      this.totalPages = pageData.totalPages;
-    }
+  }
+
+  formatPrice(value: number | null | undefined): string {
+    return Number(value ?? 0).toFixed(2);
   }
 
   applyFilters(): void {
@@ -214,9 +242,33 @@ export class ProductListComponent implements OnInit {
 
   addToCart(product: Product, event: Event): void {
     event.stopPropagation();
+
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
     this.cartService.addToCart(product.id, 1).subscribe({
-      next: () => alert('Added to cart!'),
-      error: () => alert('Failed to add to cart')
+      next: response => {
+        if (response.success) {
+          alert('Added to cart!');
+        } else {
+          alert(response.message || 'Unable to add this product to your cart');
+        }
+      },
+      error: error => {
+        console.error('Add to cart failed', error);
+        if (error.status === 401) {
+          this.router.navigate(['/login'], {
+            queryParams: { returnUrl: this.router.url }
+          });
+        } else {
+          alert(error.error?.message || 'Unable to add this product to your cart');
+        }
+      }
     });
   }
+}
 }

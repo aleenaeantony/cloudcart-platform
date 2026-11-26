@@ -19,7 +19,8 @@ export class AuthService {
   }
 
   register(request: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/auth/register`, request)
+    const payload = { ...request, phone: request.phone?.trim() || null };
+    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/auth/register`, payload)
       .pipe(
         tap(response => {
           if (response.success && response.data) {
