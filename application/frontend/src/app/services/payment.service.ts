@@ -7,7 +7,7 @@ import { Payment, ApiResponse, PageResponse } from '../models/order.model';
   providedIn: 'root'
 })
 export class PaymentService {
-  private apiUrl = '//api/payments';
+  private apiUrl = '/api/payments';
 
   constructor(private http: HttpClient) {}
 

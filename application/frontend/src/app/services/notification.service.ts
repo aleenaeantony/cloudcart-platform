@@ -7,7 +7,7 @@ import { Notification, ApiResponse, PageResponse } from '../models/order.model';
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = '//api/notifications';
+  private apiUrl = '/api/notifications';
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 

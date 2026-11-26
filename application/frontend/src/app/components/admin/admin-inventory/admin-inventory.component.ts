@@ -42,7 +42,7 @@ export class AdminInventoryComponent implements OnInit {
   inventory: any[] = [];
   constructor(private http: HttpClient) {}
   ngOnInit(): void {
-    this.http.get<any>('//api/inventory').subscribe(res => {
+    this.http.get<any>('/api/inventory').subscribe(res => {
       if (res.success && res.data) this.inventory = res.data;
     });
   }

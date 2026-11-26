@@ -7,7 +7,7 @@ import { Product, Category, PageResponse, ApiResponse } from '../models/product.
   providedIn: 'root'
 })
 export class ProductService {
-  private apiUrl = '//api';
+  private apiUrl = '/api';
 
   constructor(private http: HttpClient) {}
 
