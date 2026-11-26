@@ -1,28 +1,30 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { OrderService } from '../../../services/order.service';
 import { PaymentService } from '../../../services/payment.service';
 import { ProductService } from '../../../services/product.service';
 
 @Component({
-  selector: 'app-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-dashboard',
+    imports: [],
+    template: `
     <div class="dashboard">
       <h1>Dashboard</h1>
       <div class="stats-grid">
-        <div class="stat-card" *ngFor="let stat of stats">
-          <span class="stat-icon">{{stat.icon}}</span>
-          <div class="stat-info">
-            <span class="stat-value">{{stat.value}}</span>
-            <span class="stat-label">{{stat.label}}</span>
+        @for (stat of stats; track stat) {
+          <div class="stat-card">
+            <span class="stat-icon">{{stat.icon}}</span>
+            <div class="stat-info">
+              <span class="stat-value">{{stat.value}}</span>
+              <span class="stat-label">{{stat.label}}</span>
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .dashboard { padding: 0; }
     h1 { color: #1a1a2e; margin-bottom: 24px; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }

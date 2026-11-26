@@ -1,55 +1,63 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../services/cart.service';
 import { Product } from '../../../models/product.model';
 
 @Component({
-  selector: 'app-product-detail',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
-    <div class="detail-page" *ngIf="product">
-      <div class="detail-container">
-        <div class="product-image">
-          <img [src]="product.imageUrl || 'https://placehold.co/600x400/3b82f6/ffffff?text=Product'" [alt]="product.name" />
-          <span *ngIf="product.discountPercentage > 0" class="discount-badge">-{{product.discountPercentage}}%</span>
-        </div>
-        <div class="product-info">
-          <p class="brand">{{product.brand}}</p>
-          <h1>{{product.name}}</h1>
-          <div class="rating">
-            <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
-            <span class="rating-text">{{product.rating}} rating</span>
+    selector: 'app-product-detail',
+    imports: [RouterModule],
+    template: `
+    @if (product) {
+      <div class="detail-page">
+        <div class="detail-container">
+          <div class="product-image">
+            <img [src]="product.imageUrl || 'https://placehold.co/600x400/3b82f6/ffffff?text=Product'" [alt]="product.name" />
+            @if (product.discountPercentage > 0) {
+              <span class="discount-badge">-{{product.discountPercentage}}%</span>
+            }
           </div>
-          <div class="price-section">
-            <span class="final-price">\${{product.finalPrice.toFixed(2)}}</span>
-            <span *ngIf="product.discountPercentage > 0" class="original-price">\${{product.price.toFixed(2)}}</span>
-            <span *ngIf="product.discountPercentage > 0" class="save-text">You save {{product.discountPercentage}}%</span>
-          </div>
-          <p class="description">{{product.description}}</p>
-          <div class="sku">SKU: {{product.sku}}</div>
-          <div class="quantity-selector">
-            <label>Quantity:</label>
-            <button (click)="decrementQty()">-</button>
-            <span>{{quantity}}</span>
-            <button (click)="incrementQty()">+</button>
-          </div>
-          <div class="actions">
-            <button class="add-cart" (click)="addToCart()">Add to Cart</button>
-            <button class="buy-now" (click)="buyNow()">Buy Now</button>
-          </div>
-          <div class="features">
-            <p>🚚 Free shipping on orders over $100</p>
-            <p>↩️ 30-day return policy</p>
-            <p>🔒 Secure payment</p>
+          <div class="product-info">
+            <p class="brand">{{product.brand}}</p>
+            <h1>{{product.name}}</h1>
+            <div class="rating">
+              <span class="stars">{{'★'.repeat(Math.round(product.rating))}}</span>
+              <span class="rating-text">{{product.rating}} rating</span>
+            </div>
+            <div class="price-section">
+              <span class="final-price">\${{product.finalPrice.toFixed(2)}}</span>
+              @if (product.discountPercentage > 0) {
+                <span class="original-price">\${{product.price.toFixed(2)}}</span>
+              }
+              @if (product.discountPercentage > 0) {
+                <span class="save-text">You save {{product.discountPercentage}}%</span>
+              }
+            </div>
+            <p class="description">{{product.description}}</p>
+            <div class="sku">SKU: {{product.sku}}</div>
+            <div class="quantity-selector">
+              <label>Quantity:</label>
+              <button (click)="decrementQty()">-</button>
+              <span>{{quantity}}</span>
+              <button (click)="incrementQty()">+</button>
+            </div>
+            <div class="actions">
+              <button class="add-cart" (click)="addToCart()">Add to Cart</button>
+              <button class="buy-now" (click)="buyNow()">Buy Now</button>
+            </div>
+            <div class="features">
+              <p>🚚 Free shipping on orders over $100</p>
+              <p>↩️ 30-day return policy</p>
+              <p>🔒 Secure payment</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `,
-  styles: [`
+    }
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .detail-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
     .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
     .product-image { position: relative; }

@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaymentService } from '../../../services/payment.service';
 import { Payment } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-admin-payments',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-admin-payments',
+    imports: [CommonModule, FormsModule],
+    template: `
     <div class="admin-page">
       <h1>Payment Management</h1>
       <div class="filters">
@@ -22,13 +21,15 @@ import { Payment } from '../../../models/order.model';
       <table class="data-table">
         <thead><tr><th>Reference</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>
-          <tr *ngFor="let p of payments">
-            <td><strong>{{p.paymentReference}}</strong></td>
-            <td>{{p.orderId}}</td><td>{{p.customerId}}</td>
-            <td>\${{p.amount.toFixed(2)}}</td><td>{{p.paymentMethod}}</td>
-            <td><span class="badge" [class]="p.status.toLowerCase()">{{p.status}}</span></td>
-            <td>{{p.transactionDate | date:'short'}}</td>
-          </tr>
+          @for (p of payments; track p) {
+            <tr>
+              <td><strong>{{p.paymentReference}}</strong></td>
+              <td>{{p.orderId}}</td><td>{{p.customerId}}</td>
+              <td>\${{p.amount.toFixed(2)}}</td><td>{{p.paymentMethod}}</td>
+              <td><span class="badge" [class]="p.status.toLowerCase()">{{p.status}}</span></td>
+              <td>{{p.transactionDate | date:'short'}}</td>
+            </tr>
+          }
         </tbody>
       </table>
       <div class="pagination">
@@ -37,8 +38,9 @@ import { Payment } from '../../../models/order.model';
         <button (click)="nextPage()">Next →</button>
       </div>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { padding: 0; }
     h1 { color: #1a1a2e; margin-bottom: 20px; }
     .filters { margin-bottom: 16px; }

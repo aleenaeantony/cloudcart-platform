@@ -1,59 +1,62 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { Order } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-order-detail',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
-    <div class="detail-page" *ngIf="order">
-      <h1>Order Details</h1>
-      <div class="order-info">
-        <div class="info-row"><span>Order Number:</span><strong>{{order.orderNumber}}</strong></div>
-        <div class="info-row"><span>Date:</span><span>{{order.createdAt | date:'medium'}}</span></div>
-        <div class="info-row"><span>Status:</span><span class="status" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span></div>
-        <div class="info-row"><span>Payment:</span><span class="status" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span></div>
-      </div>
-
-      <div class="timeline">
-        <h3>Order Timeline</h3>
-        <div class="timeline-items">
-          <div *ngFor="let s of statusList; let i = index" class="timeline-item"
-               [class.active]="isStatusReached(s)" [class.current]="order.orderStatus === s">
-            <div class="dot"></div>
-            <span>{{s.replace('_', ' ')}}</span>
+    selector: 'app-order-detail',
+    imports: [CommonModule, RouterModule],
+    template: `
+    @if (order) {
+      <div class="detail-page">
+        <h1>Order Details</h1>
+        <div class="order-info">
+          <div class="info-row"><span>Order Number:</span><strong>{{order.orderNumber}}</strong></div>
+          <div class="info-row"><span>Date:</span><span>{{order.createdAt | date:'medium'}}</span></div>
+          <div class="info-row"><span>Status:</span><span class="status" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span></div>
+          <div class="info-row"><span>Payment:</span><span class="status" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span></div>
+        </div>
+        <div class="timeline">
+          <h3>Order Timeline</h3>
+          <div class="timeline-items">
+            @for (s of statusList; track s; let i = $index) {
+              <div class="timeline-item"
+                [class.active]="isStatusReached(s)" [class.current]="order.orderStatus === s">
+                <div class="dot"></div>
+                <span>{{s.replace('_', ' ')}}</span>
+              </div>
+            }
           </div>
         </div>
-      </div>
-
-      <div class="items-section">
-        <h3>Items</h3>
-        <div *ngFor="let item of order.items" class="item-row">
-          <span>{{item.productName}} (×{{item.quantity}})</span>
-          <span>\${{item.totalPrice.toFixed(2)}}</span>
+        <div class="items-section">
+          <h3>Items</h3>
+          @for (item of order.items; track item) {
+            <div class="item-row">
+              <span>{{item.productName}} (×{{item.quantity}})</span>
+              <span>\${{item.totalPrice.toFixed(2)}}</span>
+            </div>
+          }
         </div>
+        <div class="summary">
+          <div class="row"><span>Subtotal:</span><span>\${{order.totalAmount.toFixed(2)}}</span></div>
+          <div class="row"><span>Tax:</span><span>\${{order.taxAmount.toFixed(2)}}</span></div>
+          <div class="row"><span>Shipping:</span><span>{{order.shippingAmount === 0 ? 'Free' : '$' + order.shippingAmount.toFixed(2)}}</span></div>
+          <hr />
+          <div class="row total"><span>Total:</span><span>\${{order.finalAmount.toFixed(2)}}</span></div>
+        </div>
+        <div class="address-section">
+          <h3>Shipping Address</h3>
+          <p>{{order.shippingAddress}}</p>
+        </div>
+        @if (canCancel()) {
+          <button class="cancel-btn" (click)="cancelOrder()">Cancel Order</button>
+        }
       </div>
-
-      <div class="summary">
-        <div class="row"><span>Subtotal:</span><span>\${{order.totalAmount.toFixed(2)}}</span></div>
-        <div class="row"><span>Tax:</span><span>\${{order.taxAmount.toFixed(2)}}</span></div>
-        <div class="row"><span>Shipping:</span><span>{{order.shippingAmount === 0 ? 'Free' : '$' + order.shippingAmount.toFixed(2)}}</span></div>
-        <hr />
-        <div class="row total"><span>Total:</span><span>\${{order.finalAmount.toFixed(2)}}</span></div>
-      </div>
-
-      <div class="address-section">
-        <h3>Shipping Address</h3>
-        <p>{{order.shippingAddress}}</p>
-      </div>
-
-      <button *ngIf="canCancel()" class="cancel-btn" (click)="cancelOrder()">Cancel Order</button>
-    </div>
-  `,
-  styles: [`
+    }
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .detail-page { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
     h1 { color: #1a1a2e; margin-bottom: 24px; }
     .order-info { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }

@@ -1,32 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { Product, Category, PageResponse } from '../../../models/product.model';
 
 @Component({
-  selector: 'app-admin-products',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-admin-products',
+    imports: [FormsModule],
+    template: `
     <div class="admin-page">
       <div class="page-header">
         <h1>Product Management</h1>
         <button class="add-btn" (click)="showForm = !showForm">+ Add Product</button>
       </div>
 
-      <div *ngIf="showForm" class="form-card">
-        <h3>{{editingProduct ? 'Edit Product' : 'Add Product'}}</h3>
-        <form (ngSubmit)="saveProduct()">
-          <div class="form-row">
-            <div class="form-group"><label>SKU</label><input [(ngModel)]="form.sku" name="sku" required /></div>
-            <div class="form-group"><label>Name</label><input [(ngModel)]="form.name" name="name" required /></div>
-          </div>
-          <div class="form-group"><label>Description</label><textarea [(ngModel)]="form.description" name="description"></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label>Category</label>
+      @if (showForm) {
+        <div class="form-card">
+          <h3>{{editingProduct ? 'Edit Product' : 'Add Product'}}</h3>
+          <form (ngSubmit)="saveProduct()">
+            <div class="form-row">
+              <div class="form-group"><label>SKU</label><input [(ngModel)]="form.sku" name="sku" required /></div>
+              <div class="form-group"><label>Name</label><input [(ngModel)]="form.name" name="name" required /></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea [(ngModel)]="form.description" name="description"></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label>Category</label>
               <select [(ngModel)]="form.categoryId" name="categoryId" required>
-                <option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</option>
+                @for (cat of categories; track cat) {
+                  <option [value]="cat.id">{{cat.name}}</option>
+                }
               </select>
             </div>
             <div class="form-group"><label>Brand</label><input [(ngModel)]="form.brand" name="brand" /></div>
@@ -42,13 +44,15 @@ import { Product, Category, PageResponse } from '../../../models/product.model';
           </div>
         </form>
       </div>
+    }
 
-      <table class="data-table">
-        <thead>
-          <tr><th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Status</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of products">
+    <table class="data-table">
+      <thead>
+        <tr><th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        @for (p of products; track p) {
+          <tr>
             <td>{{p.sku}}</td>
             <td>{{p.name}}</td>
             <td>{{p.categoryName || '-'}}</td>
@@ -60,16 +64,18 @@ import { Product, Category, PageResponse } from '../../../models/product.model';
               <button class="action-btn delete" (click)="deleteProduct(p.id)">Delete</button>
             </td>
           </tr>
-        </tbody>
-      </table>
-      <div class="pagination">
-        <button [disabled]="currentPage === 0" (click)="prevPage()">← Prev</button>
-        <span>Page {{currentPage + 1}}</span>
-        <button (click)="nextPage()">Next →</button>
-      </div>
+        }
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button [disabled]="currentPage === 0" (click)="prevPage()">← Prev</button>
+      <span>Page {{currentPage + 1}}</span>
+      <button (click)="nextPage()">Next →</button>
     </div>
-  `,
-  styles: [`
+    </div>
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { padding: 0; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     h1 { color: #1a1a2e; }

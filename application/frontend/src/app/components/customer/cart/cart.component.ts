@@ -1,55 +1,61 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
 import { Cart } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-cart',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-cart',
+    imports: [RouterModule],
+    template: `
     <div class="cart-page">
       <h1>Shopping Cart</h1>
-      <div *ngIf="!cart || cart.items.length === 0" class="empty-cart">
-        <p>🛒 Your cart is empty</p>
-        <a routerLink="/products" class="shop-btn">Start Shopping</a>
-      </div>
-      <div *ngIf="cart && cart.items.length > 0" class="cart-container">
-        <div class="cart-items">
-          <div *ngFor="let item of cart.items" class="cart-item">
-            <img [src]="item.imageUrl || 'https://placehold.co/100x100/3b82f6/ffffff?text=Item'" [alt]="item.productName" />
-            <div class="item-details">
-              <h3>{{item.productName}}</h3>
-              <p class="sku">SKU: {{item.sku}}</p>
-              <p class="price">\${{item.unitPrice.toFixed(2)}}</p>
+      @if (!cart || cart.items.length === 0) {
+        <div class="empty-cart">
+          <p>🛒 Your cart is empty</p>
+          <a routerLink="/products" class="shop-btn">Start Shopping</a>
+        </div>
+      }
+      @if (cart && cart.items.length > 0) {
+        <div class="cart-container">
+          <div class="cart-items">
+            @for (item of cart.items; track item) {
+              <div class="cart-item">
+                <img [src]="item.imageUrl || 'https://placehold.co/100x100/3b82f6/ffffff?text=Item'" [alt]="item.productName" />
+                <div class="item-details">
+                  <h3>{{item.productName}}</h3>
+                  <p class="sku">SKU: {{item.sku}}</p>
+                  <p class="price">\${{item.unitPrice.toFixed(2)}}</p>
+                </div>
+                <div class="quantity-controls">
+                  <button (click)="updateQuantity(item.productId, item.quantity - 1)">-</button>
+                  <span>{{item.quantity}}</span>
+                  <button (click)="updateQuantity(item.productId, item.quantity + 1)">+</button>
+                </div>
+                <p class="subtotal">\${{item.subtotal.toFixed(2)}}</p>
+                <button class="remove-btn" (click)="removeItem(item.productId)">✕</button>
+              </div>
+            }
+          </div>
+          <div class="cart-summary">
+            <h3>Order Summary</h3>
+            <div class="summary-row"><span>Subtotal ({{cart.totalItems}} items)</span><span>\${{cart.subtotal.toFixed(2)}}</span></div>
+            <div class="summary-row"><span>Shipping</span><span>{{cart.subtotal >= 100 ? 'Free' : '$9.99'}}</span></div>
+            <div class="summary-row"><span>Tax (18% GST)</span><span>\${{(cart.subtotal * 0.18).toFixed(2)}}</span></div>
+            <hr />
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>\${{(cart.subtotal + (cart.subtotal >= 100 ? 0 : 9.99) + cart.subtotal * 0.18).toFixed(2)}}</span>
             </div>
-            <div class="quantity-controls">
-              <button (click)="updateQuantity(item.productId, item.quantity - 1)">-</button>
-              <span>{{item.quantity}}</span>
-              <button (click)="updateQuantity(item.productId, item.quantity + 1)">+</button>
-            </div>
-            <p class="subtotal">\${{item.subtotal.toFixed(2)}}</p>
-            <button class="remove-btn" (click)="removeItem(item.productId)">✕</button>
+            <button class="checkout-btn" (click)="checkout()">Proceed to Checkout →</button>
+            <a routerLink="/products" class="continue-link">← Continue Shopping</a>
           </div>
         </div>
-        <div class="cart-summary">
-          <h3>Order Summary</h3>
-          <div class="summary-row"><span>Subtotal ({{cart.totalItems}} items)</span><span>\${{cart.subtotal.toFixed(2)}}</span></div>
-          <div class="summary-row"><span>Shipping</span><span>{{cart.subtotal >= 100 ? 'Free' : '$9.99'}}</span></div>
-          <div class="summary-row"><span>Tax (18% GST)</span><span>\${{(cart.subtotal * 0.18).toFixed(2)}}</span></div>
-          <hr />
-          <div class="summary-row total">
-            <span>Total</span>
-            <span>\${{(cart.subtotal + (cart.subtotal >= 100 ? 0 : 9.99) + cart.subtotal * 0.18).toFixed(2)}}</span>
-          </div>
-          <button class="checkout-btn" (click)="checkout()">Proceed to Checkout →</button>
-          <a routerLink="/products" class="continue-link">← Continue Shopping</a>
-        </div>
-      </div>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .cart-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
     h1 { color: #1a1a2e; margin-bottom: 24px; }
     .empty-cart { text-align: center; padding: 64px; }

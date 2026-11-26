@@ -1,20 +1,21 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-login',
+    imports: [FormsModule, RouterModule],
+    template: `
     <div class="auth-page">
       <div class="auth-card">
         <h2>Welcome Back</h2>
         <p class="subtitle">Sign in to your account</p>
 
-        <div *ngIf="error" class="error-alert">{{error}}</div>
+        @if (error) {
+          <div class="error-alert">{{error}}</div>
+        }
 
         <form (ngSubmit)="onSubmit()">
           <div class="form-group">
@@ -25,7 +26,7 @@ import { AuthService } from '../../../services/auth.service';
             <label>Password</label>
             <div class="password-input">
               <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
-                     required placeholder="Enter your password" />
+                required placeholder="Enter your password" />
               <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
                 {{showPassword ? '🙈' : '👁️'}}
               </button>
@@ -45,8 +46,9 @@ import { AuthService } from '../../../services/auth.service';
         </div>
       </div>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .auth-page { min-height: 80vh; display: flex; align-items: center; justify-content: center; background: #f5f5f5; padding: 24px; }
     .auth-card { background: white; border-radius: 12px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     h2 { text-align: center; color: #1a1a2e; margin-bottom: 4px; }

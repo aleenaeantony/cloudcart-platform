@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-order-success',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  template: `
+    selector: 'app-order-success',
+    imports: [RouterModule],
+    template: `
     <div class="success-page">
       <div class="success-card">
         <div class="check-icon">✓</div>
@@ -22,7 +21,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
       </div>
     </div>
   `,
-  styles: [`
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .success-page { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
     .success-card { background: white; border-radius: 12px; padding: 48px; text-align: center; max-width: 500px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     .check-icon { width: 80px; height: 80px; background: #16a34a; color: white; font-size: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }

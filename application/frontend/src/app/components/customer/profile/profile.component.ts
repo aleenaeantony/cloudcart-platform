@@ -1,47 +1,49 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../models/user.model';
 
 @Component({
-  selector: 'app-profile',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-profile',
+    imports: [FormsModule],
+    template: `
     <div class="profile-page">
       <h1>My Profile</h1>
-      <div class="profile-card" *ngIf="user">
-        <div class="avatar">{{user.firstName[0]}}{{user.lastName[0]}}</div>
-        <form (ngSubmit)="updateProfile()">
-          <div class="form-row">
-            <div class="form-group">
-              <label>First Name</label>
-              <input [(ngModel)]="user.firstName" name="firstName" />
+      @if (user) {
+        <div class="profile-card">
+          <div class="avatar">{{user.firstName[0]}}{{user.lastName[0]}}</div>
+          <form (ngSubmit)="updateProfile()">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name</label>
+                <input [(ngModel)]="user.firstName" name="firstName" />
+              </div>
+              <div class="form-group">
+                <label>Last Name</label>
+                <input [(ngModel)]="user.lastName" name="lastName" />
+              </div>
             </div>
             <div class="form-group">
-              <label>Last Name</label>
-              <input [(ngModel)]="user.lastName" name="lastName" />
+              <label>Email</label>
+              <input [value]="user.email" disabled />
             </div>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input [value]="user.email" disabled />
-          </div>
-          <div class="form-group">
-            <label>Phone</label>
-            <input [(ngModel)]="user.phone" name="phone" />
-          </div>
-          <div class="form-group">
-            <label>Role</label>
-            <input [value]="user.role" disabled />
-          </div>
-          <button type="submit" class="save-btn">Save Changes</button>
-        </form>
-      </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input [(ngModel)]="user.phone" name="phone" />
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <input [value]="user.role" disabled />
+            </div>
+            <button type="submit" class="save-btn">Save Changes</button>
+          </form>
+        </div>
+      }
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .profile-page { max-width: 600px; margin: 0 auto; padding: 32px 24px; }
     h1 { color: #1a1a2e; margin-bottom: 24px; }
     .profile-card { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }

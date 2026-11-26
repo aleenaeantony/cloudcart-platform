@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../services/order.service';
 import { Order } from '../../../models/order.model';
 
 @Component({
-  selector: 'app-admin-orders',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-admin-orders',
+    imports: [CommonModule, FormsModule],
+    template: `
     <div class="admin-page">
       <h1>Order Management</h1>
       <div class="filters">
@@ -37,20 +36,26 @@ import { Order } from '../../../models/order.model';
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let order of orders">
-            <td><strong>{{order.orderNumber}}</strong></td>
-            <td>{{order.customerId}}</td>
-            <td>{{order.createdAt | date:'short'}}</td>
-            <td>\${{order.finalAmount.toFixed(2)}}</td>
-            <td><span class="badge" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span></td>
-            <td><span class="badge" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span></td>
-            <td>
-              <select *ngIf="canUpdateStatus(order)" [(ngModel)]="newStatus" (change)="updateStatus(order)">
-                <option value="">Update Status</option>
-                <option *ngFor="let s of getValidTransitions(order.orderStatus)" [value]="s">{{s.replace('_', ' ')}}</option>
-              </select>
-            </td>
-          </tr>
+          @for (order of orders; track order) {
+            <tr>
+              <td><strong>{{order.orderNumber}}</strong></td>
+              <td>{{order.customerId}}</td>
+              <td>{{order.createdAt | date:'short'}}</td>
+              <td>\${{order.finalAmount.toFixed(2)}}</td>
+              <td><span class="badge" [class]="order.paymentStatus.toLowerCase()">{{order.paymentStatus}}</span></td>
+              <td><span class="badge" [class]="order.orderStatus.toLowerCase()">{{order.orderStatus}}</span></td>
+              <td>
+                @if (canUpdateStatus(order)) {
+                  <select [(ngModel)]="newStatus" (change)="updateStatus(order)">
+                    <option value="">Update Status</option>
+                    @for (s of getValidTransitions(order.orderStatus); track s) {
+                      <option [value]="s">{{s.replace('_', ' ')}}</option>
+                    }
+                  </select>
+                }
+              </td>
+            </tr>
+          }
         </tbody>
       </table>
       <div class="pagination">
@@ -59,8 +64,9 @@ import { Order } from '../../../models/order.model';
         <button (click)="nextPage()">Next →</button>
       </div>
     </div>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { padding: 0; }
     h1 { color: #1a1a2e; margin-bottom: 20px; }
     .filters { margin-bottom: 16px; }
